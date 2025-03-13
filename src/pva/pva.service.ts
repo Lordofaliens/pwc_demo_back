@@ -1,65 +1,89 @@
 import { Injectable } from '@nestjs/common';
+import { OrderService } from '../database/order/order.service';
+import { ProductService } from '../database/product/product.service';
 
 @Injectable()
 export class PVAService {
-    async calculatePVA(starSchemaBlueprint: any) {
-        const { customerIDs, productIDs } = starSchemaBlueprint;
+    constructor(
+        private readonly orderService: OrderService,
+        private readonly productService: ProductService,
+    ) {}
 
-        // Sample Data (Fact Table)
-        const factTable = [
-            { ID: 1, CustomerID: 101, ProductID: 1, Quantity: 10, Invoice_Num: 1001 },
-            { ID: 2, CustomerID: 102, ProductID: 2, Quantity: 5, Invoice_Num: 1002 },
-            { ID: 3, CustomerID: 101, ProductID: 1, Quantity: 15, Invoice_Num: 1003 },
-            { ID: 4, CustomerID: 103, ProductID: 3, Quantity: 20, Invoice_Num: 1004 },
-        ];
+    async calculatePVA(pvaConfig: any) {
+        const customerIDs = pvaConfig?.customerIDs || [];
+        const productIDs = pvaConfig?.productIDs || [];
 
-        // Sample Data (Product Dim)
-        const productDim = [
-            { ID: 1, Unit_Price: 20, Stock_Code: 'P100' },
-            { ID: 2, Unit_Price: 50, Stock_Code: 'P200' },
-            { ID: 3, Unit_Price: 30, Stock_Code: 'P300' },
-        ];
+        // Fetch data from the respective services
+        const orders = await this.orderService.getOrders(customerIDs, productIDs);
+        const products = await this.productService.getAllProducts();
 
-        // Sample Data (Customer Dim)
-        const customerDim = [
-            { ID: 101, Country: 'USA' },
-            { ID: 102, Country: 'UK' },
-            { ID: 103, Country: 'Germany' },
-        ];
+        let firstYearProjection: number = 0;
+        let totalQuantity: number = 0;
+        let totalPriceImpact: number = 0;
+        let totalVolumeImpact: number = 0;
+        let totalMixImpact: number = 0;
 
-        // Filter Fact Table based on input IDs
-        const filteredData = factTable.filter(
-            (row) => customerIDs.includes(row.CustomerID) && productIDs.includes(row.ProductID),
-        );
-
-        // Calculate PVA Metrics
-        let previousValue = 0;
-        let currentValue = 0;
-        let priceImpact = 0;
-        let volumeImpact = 0;
-        let mixImpact = 0;
-
-        filteredData.forEach((row) => {
-            const product = productDim.find((p) => p.ID === row.ProductID);
-            if (!product) return;
-
-            const unitPrice = product.Unit_Price;
-            const quantity = row.Quantity;
-
-            previousValue += unitPrice * (quantity - 2); // Simulating previous quantity
-            currentValue += unitPrice * quantity;
+        // Parse data to calculate total weighted price and total quantity
+        orders.forEach(order => {
+            const product = products.find(p => p.ID === order.ProductID);
+            if (product) {
+                for (let i = 0; i < order.Quantity; i++) {
+                    firstYearProjection += product.Unit_Price;
+                }
+                totalQuantity += order.Quantity;
+            }
         });
 
-        priceImpact = currentValue - previousValue;
-        volumeImpact = (currentValue / previousValue - 1) * 100;
-        mixImpact = priceImpact - volumeImpact;
+        const weightedAveragePrice: number = totalQuantity > 0 ? (firstYearProjection / totalQuantity) : 0.00;
 
-        return {
-            previousValue: previousValue.toFixed(2),
-            currentValue: currentValue.toFixed(2),
-            priceImpact: priceImpact.toFixed(2),
-            volumeImpact: volumeImpact.toFixed(2),
-            mixImpact: mixImpact.toFixed(2),
-        };
+        // Calculate PVA for each order
+        const results = orders.map(order => {
+            const product = products.find(p => p.ID === order.ProductID);
+            if (!product) return null;
+
+            const currentPrice = product.Unit_Price;
+            const previousPrice = currentPrice * this.getRandomMultiplier();
+            const quantity = order.Quantity;
+            const previousQuantity = quantity * this.getRandomMultiplier();
+            const currentQuantityPercent = quantity / totalQuantity;
+            const previousQuantityPercent = quantity * this.getRandomMultiplier();
+
+            const priceImpact = (currentPrice - previousPrice) * quantity;
+            const mixImpact = quantity * (previousPrice - weightedAveragePrice) * (currentQuantityPercent - previousQuantityPercent);
+            const volumeImpact = (quantity - previousQuantity) * previousPrice - mixImpact;
+
+            totalPriceImpact += priceImpact;
+            totalVolumeImpact += volumeImpact;
+            totalMixImpact += mixImpact;
+
+            return {
+                orderID: order.ID,
+                quantity,
+                previousQuantity,
+                previousPrice,
+                currentPrice,
+                priceImpact,
+                volumeImpact,
+                mixImpact,
+            };
+        }).filter(result => result !== null);
+
+        let secondYearProjection: number = firstYearProjection + totalPriceImpact + totalVolumeImpact + totalMixImpact;
+
+        return { results, totalQuantity, firstYearProjection, totalPriceImpact, totalVolumeImpact, totalMixImpact, secondYearProjection };
+    }
+
+    private getRandomMultiplier(): number {
+        let rand1 = Math.random();
+        let rand2 = Math.random();
+
+        // Generate a random number with Gaussian distribution (mean = 1, stddev ~0.1)
+        let gaussianRandom = Math.sqrt(-2.0 * Math.log(rand1)) * Math.cos(2.0 * Math.PI * rand2);
+
+        // Scale it to fit in the range [0.85, 1.15]
+        let scaledRandom = 1 + gaussianRandom * 0.1; // Adjust std deviation to fit range
+
+        // Ensure it's within bounds
+        return Math.min(Math.max(scaledRandom, 0.85), 1.15);
     }
 }
