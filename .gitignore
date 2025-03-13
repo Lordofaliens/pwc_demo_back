@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# API
+.env
+
 # Logs
 logs
 *.log
