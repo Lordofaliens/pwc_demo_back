@@ -6,7 +6,7 @@ export class PVAController {
     constructor(private readonly pvaService: PVAService) {}
 
     @Post('analyze')
-    async analyze(@Body() starSchemaBlueprint: any) {
-        return this.pvaService.calculatePVA(starSchemaBlueprint);
+    async analyze(@Body() pvaConfig: any) {
+        return this.pvaService.calculatePVA(pvaConfig);
     }
 }
