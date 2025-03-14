@@ -13,8 +13,8 @@ export class OrderService {
     async getOrdersByCustomerAndProduct(customerIDs: number[], productIDs: number[]): Promise<Order[]> {
         return this.orderRepository.find({
             where: {
-                CustomerID: In(customerIDs),
-                ProductID: In(productIDs),
+                customer: In(customerIDs),
+                product: In(productIDs),
             },
         });
     }
@@ -23,17 +23,21 @@ export class OrderService {
         return this.orderRepository.find();
     }
 
+    async createOrder(order: Partial<Order>): Promise<Order> {
+        return this.orderRepository.save(order);
+    }
+
     async getOrders(customerIDs?: number[], productIDs?: number[]) {
         const query = this.orderRepository.createQueryBuilder('order');
 
         // If customerIDs array is not empty, apply the filter
         if (customerIDs?.length) {
-            query.andWhere('order.customerID IN (:...customerIDs)', { customerIDs });
+            query.andWhere('order.customer_id IN (:...customerIDs)', { customerIDs });
         }
 
         // If productIDs array is not empty, apply the filter
         if (productIDs?.length) {
-            query.andWhere('order.productID IN (:...productIDs)', { productIDs });
+            query.andWhere('order.product_id IN (:...productIDs)', { productIDs });
         }
 
         return query.getMany();

@@ -15,8 +15,14 @@ export class CustomerService {
     }
 
     async getCustomerById(id: number): Promise<Customer> {
-        return this.customerRepository.findOne({ where: { ID: id } });
+        return this.customerRepository.findOne({ where: { customer_key: id } });
     }
+    
+    async getCustomerByExternalId(customerId: string) {
+        return this.customerRepository.findOne({
+          where: { customerId },
+        });
+      }
 
     async createCustomer(customer: Partial<Customer>): Promise<Customer> {
         return this.customerRepository.save(customer);

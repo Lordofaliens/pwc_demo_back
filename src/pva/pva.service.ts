@@ -25,12 +25,12 @@ export class PVAService {
 
         // Parse data to calculate total weighted price and total quantity
         orders.forEach(order => {
-            const product = products.find(p => p.ID === order.ProductID);
+            const product = products.find(p => p.product_key === order.product_id);
             if (product) {
-                for (let i = 0; i < order.Quantity; i++) {
-                    firstYearProjection += product.Unit_Price;
+                for (let i = 0; i < order.quantity; i++) {
+                    firstYearProjection += product.unit_price
                 }
-                totalQuantity += order.Quantity;
+                totalQuantity += order.quantity;
             }
         });
 
@@ -38,12 +38,12 @@ export class PVAService {
 
         // Calculate PVA for each order
         const results = orders.map(order => {
-            const product = products.find(p => p.ID === order.ProductID);
+            const product = products.find(p => p.product_key === order.product_id);
             if (!product) return null;
 
-            const currentPrice = product.Unit_Price;
+            const currentPrice = product.unit_price;
             const previousPrice = currentPrice * this.getRandomMultiplier();
-            const quantity = order.Quantity;
+            const quantity = order.quantity;
             const previousQuantity = quantity * this.getRandomMultiplier();
             const currentQuantityPercent = quantity / totalQuantity;
             const previousQuantityPercent = quantity * this.getRandomMultiplier();
@@ -57,7 +57,7 @@ export class PVAService {
             totalMixImpact += mixImpact;
 
             return {
-                orderID: order.ID,
+                orderID: order.index,
                 quantity,
                 previousQuantity,
                 previousPrice,

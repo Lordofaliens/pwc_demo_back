@@ -1,13 +1,21 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Order } from '../order/order.entity';
 
-@Entity('products')
+@Entity('product_dim')
 export class Product {
-    @PrimaryGeneratedColumn()
-    ID: number;
+  @PrimaryGeneratedColumn()
+  product_key: number;
 
-    @Column()
-    Unit_Price: number;
+  @Column()
+  stock_code: string;
 
-    @Column()
-    Stock_Code: string;
+  @Column('text')
+  description: string;
+
+  @Column('numeric')
+  unit_price: number;
+
+  @OneToMany(() => Order, order => order.product)
+  orders: Order[];
 }
+

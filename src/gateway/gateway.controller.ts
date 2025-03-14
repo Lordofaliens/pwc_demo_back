@@ -3,7 +3,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { GatewayService } from './gateway.service';
 import { Express } from 'express';
 
-
 @Controller('gateway')
 export class GatewayController {
     constructor(private readonly gatewayService: GatewayService) {}

@@ -15,7 +15,11 @@ export class ProductService {
     }
 
     async getProductById(id: number): Promise<Product> {
-        return this.productRepository.findOne({ where: { ID: id } });
+        return this.productRepository.findOne({ where: { product_key: id } });
+    }
+
+    async getProductByStockCode(stockCode: string): Promise<Product> {
+        return this.productRepository.findOne({ where: {stock_code:stockCode } });
     }
 
     async createProduct(product: Partial<Product>): Promise<Product> {

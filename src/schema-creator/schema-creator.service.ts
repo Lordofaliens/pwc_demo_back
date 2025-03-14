@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
 import csvParser from 'csv-parser';
@@ -17,19 +17,18 @@ async function generateStarSchemaWithGemini(csvData: string) {
          - Index (Preserved unique ID for the transaction)
          - InvoiceNo (Invoice number for the transaction)
          - Quantity (Quantity of the product sold)
-         - InvoiceDate (Date of the transaction)
 
       2. **Dimension Tables**: Only TWO dimensions are allowed:
          - **Product_Dim**: Must include the following attributes:
            - ProductID (Primary Key, unique identifier for the product)
            - StockCode (Product code)
            - UnitPrice (Price per unit of the product)
-           - Description (Description of the product)
          - **Customer_Dim**: Must include the following attributes:
            - CustomerID (Primary Key, unique identifier for the customer)
            - Country (Country of the customer)
 
       3. **Important Notes**:
+         - Include Invoice Data in fact table.
          - DO NOT include a Time dimension. I repeat, DO NOT add a Time dimension.
          - Ensure the schema adheres strictly to the requirements above. Only two dimensions (Product_Dim and Customer_Dim) should be created.
 
@@ -49,6 +48,9 @@ async function generateStarSchemaWithGemini(csvData: string) {
 export class SchemaCreatorService {
 
   async processData(rows: any, data: any) {
+    if (!rows.length) {
+      throw new BadRequestException('No data found in CSV');
+    }
     const schema = await generateStarSchemaWithGemini(data); 
     return {
         message: 'Star Schema Suggested',

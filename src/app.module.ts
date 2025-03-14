@@ -19,11 +19,11 @@ import { PostgresModule } from './database/postgres/postgres.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
+      host: 'localhost',
       port: 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'Satyam', // Ensure this is correct
-      database: process.env.DB_DATABASE || 'pwc_demo',
+      username: 'postgres',
+      password: 'Satyam', // Ensure this is correct
+      database: 'pwc_demo',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),

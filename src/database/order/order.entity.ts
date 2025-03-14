@@ -1,19 +1,32 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Customer } from '../customer/customer.entity';
+import { Product } from '../product/product.entity';
 
-@Entity('orders')
+@Entity('fact_table')
 export class Order {
     @PrimaryGeneratedColumn()
-    ID: number;
+    index: number;
 
     @Column()
-    CustomerID: number;
-
+    invoice_no: string;
+  
     @Column()
-    ProductID: number;
-
+    quantity: number;
+  
     @Column()
-    Quantity: number;
-
+    invoice_date: Date;
+  
     @Column()
-    Invoice_Num: number;
+    customer_id: number;
+  
+    @Column()
+    product_id: number;
+    
+    @ManyToOne(() => Customer, customer => customer.orders)
+    @JoinColumn({ name: 'customer_id' })
+    customer: Customer;
+
+    @ManyToOne(() => Product, product => product.orders)
+    @JoinColumn({ name: 'product_id' })
+    product: Product;
 }
