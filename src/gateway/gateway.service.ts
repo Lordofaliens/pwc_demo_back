@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { SchemaCreatorService } from '../schema-creator/schema-creator.service';
 import * as csvParser from 'csv-parser';
 import { Readable } from 'stream';
+import { PostgresService } from 'src/database/postgres/postgres.service';
 const fs = require('fs');
 
 
 @Injectable()
 export class GatewayService {
     constructor(
-        private readonly schemaCreatorService: SchemaCreatorService
+        private readonly schemaCreatorService: SchemaCreatorService, 
+        private readonly postgresService: PostgresService
         ) {}
 
     async processFile(filePath: string) {
@@ -26,7 +28,9 @@ export class GatewayService {
         console.log("2")
         const csvData = rows.slice(0, 10).map((row) => Object.values(row).join(',')).join('\n');
         const schema = await this.schemaCreatorService.processData(rows, csvData);
-
+          
+        // make a postgress connection and create the schema
+        await this.postgresService.createSchema();
         return schema
     }
 }

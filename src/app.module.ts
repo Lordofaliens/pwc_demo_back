@@ -1,19 +1,40 @@
+// app.module.ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import {GatewayController} from "./gateway/gateway.controller";
-import {PVAController} from "./pva/pva.controller";
-import {CustomerModule} from "./database/customer/customer.module";
-import {OrderModule} from "./database/order/order.module";
-import {ProductModule} from "./database/product/product.module";
-import {PVAModule} from "./pva/pva.module";
-import {GatewayModule} from "./gateway/gateway.module";
-import { GatewayService } from './gateway/gateway.service';
-import { SchemaCreatorService } from './schema-creator/schema-creator.service';
+import { GatewayModule } from './gateway/gateway.module';
+import { CustomerModule } from './database/customer/customer.module';
+import { OrderModule } from './database/order/order.module';
+import { ProductModule } from './database/product/product.module';
+import { PVAModule } from './pva/pva.module';
+import { PostgresModule } from './database/postgres/postgres.module';
+
+//log the password before the .forRoot() call
+// This works: console.log(process.env.DB_PASSWORD);
+
+// Add your environment variables or replace with your connection details.
 @Module({
-  imports: [CustomerModule, OrderModule, ProductModule, GatewayModule, PVAModule],
-  controllers: [AppController, GatewayController, PVAController],
-  providers: [AppService, GatewayService, SchemaCreatorService],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: 5432,
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD || 'Satyam', // Ensure this is correct
+      database: process.env.DB_DATABASE || 'pwc_demo',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
+    GatewayModule,
+    CustomerModule,
+    OrderModule,
+    ProductModule,
+    PVAModule,
+    PostgresModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

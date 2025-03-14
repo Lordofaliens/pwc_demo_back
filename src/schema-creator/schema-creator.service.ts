@@ -47,8 +47,7 @@ async function generateStarSchemaWithGemini(csvData: string) {
 
 @Injectable()
 export class SchemaCreatorService {
-  // Your service logic here
-    
+
   async processData(rows: any, data: any) {
     const schema = await generateStarSchemaWithGemini(data); 
     return {

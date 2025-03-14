@@ -1,0 +1,45 @@
+Folder PATH listing for volume OS
+Volume serial number is A280-2699
+C:.
+|   app.controller.spec.ts
+|   app.controller.ts
+|   app.module.ts
+|   app.service.ts
+|   main.ts
+|   output.doc
+|   
++---database
+|   +---customer
+|   |       customer.entity.ts
+|   |       customer.module.ts
+|   |       customer.service.ts
+|   |       
+|   +---order
+|   |       order.entity.ts
+|   |       order.module.ts
+|   |       order.service.ts
+|   |       
+|   +---postgres
+|   |       postgres.entity.ts
+|   |       postgres.module.ts
+|   |       postgres.service.ts
+|   |       
+|   \---product
+|           product.entity.ts
+|           product.module.ts
+|           product.service.ts
+|           
++---gateway
+|       gateway.controller.ts
+|       gateway.module.ts
+|       gateway.service.ts
+|       
++---pva
+|       pva.controller.ts
+|       pva.module.ts
+|       pva.service.ts
+|       
+\---schema-creator
+        schema-creator.service.ts
+        star-schema.sql
+        

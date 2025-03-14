@@ -8,15 +8,21 @@ import { Express } from 'express';
 export class GatewayController {
     constructor(private readonly gatewayService: GatewayService) {}
 
-    @Post('uploadPath')
-    async uploadPath(@Body() body: { filePath: string }) {
+    @Post('generate-schema')
+    async generateSchema(@Body() body: { filePath: string }) {
         const { filePath } = body;
         
         if (!filePath) {
             throw new Error('No file path provided');
         }
         console.log(filePath);
-        return this.gatewayService.processFile(filePath);
+
+        // Process the scehma
+        const schema = await this.gatewayService.processFile(filePath);
+        
+        // make a postgress connection and create the schema
+
+        return schema;
     }
     
 }
