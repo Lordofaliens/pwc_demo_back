@@ -5,6 +5,7 @@ import { PostgresService } from 'src/database/postgres/postgres.service';
 import { CustomerService } from '../database/customer/customer.service';
 import { ProductService } from '../database/product/product.service';
 import { OrderService } from '../database/order/order.service';
+import {PVAService} from "../pva/pva.service";
 const fs = require('fs');
 
 @Injectable()
@@ -16,7 +17,8 @@ export class GatewayService {
         private readonly postgresService: PostgresService,
         private readonly customerService: CustomerService,
         private readonly productService: ProductService,
-        private readonly orderService: OrderService
+        private readonly orderService: OrderService,
+        private readonly pvaService: PVAService,
     ) {}
 
     async processFile(filePath: string) {
@@ -78,8 +80,8 @@ export class GatewayService {
                         product_id: product.product_key,
                     });
                     processedData.orders++;
-                    console.log(`Processed row ${index + 1} of ${rows.length}`);
-                    console.log(`Processed data: ${JSON.stringify(processedData)}`);
+                    // console.log(`Processed row ${index + 1} of ${rows.length}`);
+                    // console.log(`Processed data: ${JSON.stringify(processedData)}`);
 
                 } catch (error) {
                     processedData.errors++;
@@ -98,5 +100,10 @@ export class GatewayService {
             this.logger.error(`File processing failed: ${error.message}`);
             throw error;
         }
+    }
+
+    async calculatePva(schema: string) {
+        const {firstYearProjection, totalPriceImpact, totalVolumeImpact, totalMixImpact, secondYearProjection} = await this.pvaService.calculatePVA(schema);
+        return {success: true, firstYearProjection, totalPriceImpact, totalVolumeImpact, totalMixImpact, secondYearProjection};
     }
 }

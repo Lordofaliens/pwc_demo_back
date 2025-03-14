@@ -15,8 +15,9 @@ export class PVAService {
 
         // Fetch data from the respective services
         const orders = await this.orderService.getOrders(customerIDs, productIDs);
+        console.log("ORDER LENGTH", orders.length);
         const products = await this.productService.getAllProducts();
-
+        console.log("PRODUCT LENGTH", products.length);
         let firstYearProjection: number = 0;
         let totalQuantity: number = 0;
         let totalPriceImpact: number = 0;
@@ -28,7 +29,7 @@ export class PVAService {
             const product = products.find(p => p.product_key === order.product_id);
             if (product) {
                 for (let i = 0; i < order.quantity; i++) {
-                    firstYearProjection += product.unit_price
+                    firstYearProjection += Number(product.unit_price);
                 }
                 totalQuantity += order.quantity;
             }
@@ -46,7 +47,7 @@ export class PVAService {
             const quantity = order.quantity;
             const previousQuantity = quantity * this.getRandomMultiplier();
             const currentQuantityPercent = quantity / totalQuantity;
-            const previousQuantityPercent = quantity * this.getRandomMultiplier();
+            const previousQuantityPercent = currentQuantityPercent * this.getRandomMultiplier();
 
             const priceImpact = (currentPrice - previousPrice) * quantity;
             const mixImpact = quantity * (previousPrice - weightedAveragePrice) * (currentQuantityPercent - previousQuantityPercent);
@@ -68,7 +69,14 @@ export class PVAService {
             };
         }).filter(result => result !== null);
 
-        let secondYearProjection: number = firstYearProjection + totalPriceImpact + totalVolumeImpact + totalMixImpact;
+        let secondYearProjection: number = Number(firstYearProjection) + Number(totalPriceImpact) + Number(totalVolumeImpact) + Number(totalMixImpact);
+
+        console.log('Total Quantity:', totalQuantity);
+        console.log('First Year Projection:', firstYearProjection);
+        console.log('Total Price Impact:', totalPriceImpact);
+        console.log('Total Volume Impact:', totalVolumeImpact);
+        console.log('Total Mix Impact:', totalMixImpact);
+        console.log('Second Year Projection:', secondYearProjection);
 
         return { results, totalQuantity, firstYearProjection, totalPriceImpact, totalVolumeImpact, totalMixImpact, secondYearProjection };
     }

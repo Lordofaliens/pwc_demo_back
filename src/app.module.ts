@@ -22,8 +22,9 @@ import { PostgresModule } from './database/postgres/postgres.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'Satyam', // Ensure this is correct
-      database: 'pwc_demo',
+      password: 'Vlad_2907', // Ensure this is correct
+      database: 'postgres',
+      schema: 'public',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),

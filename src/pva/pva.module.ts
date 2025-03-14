@@ -4,10 +4,9 @@ import { PVAController } from './pva.controller';
 import {CustomerModule} from "../database/customer/customer.module";
 import {OrderModule} from "../database/order/order.module";
 import {ProductModule} from "../database/product/product.module";
-import {GatewayModule} from "../gateway/gateway.module";
 
 @Module({
-    imports: [CustomerModule, OrderModule, ProductModule, GatewayModule],
+    imports: [CustomerModule, OrderModule, ProductModule],
     controllers: [PVAController],
     providers: [PVAService],
     exports: [PVAService],

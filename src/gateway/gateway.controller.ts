@@ -16,12 +16,19 @@ export class GatewayController {
         }
         console.log(filePath);
 
-        // Process the scehma
-        const schema = await this.gatewayService.processFile(filePath);
-        
-        // make a postgress connection and create the schema
-
-        return schema;
+        return await this.gatewayService.processFile(filePath);
     }
-    
+
+    @Post('calculate-pva')
+    async calculatePva(@Body() body: { filePath: string }) {
+        const {filePath} = body;
+
+        if (!filePath) {
+            throw new Error('No file path provided');
+        }
+        console.log(filePath);
+
+        const schema = (await this.gatewayService.processFile(filePath)).schema.schema;
+        return await this.gatewayService.calculatePva(schema);
+    }
 }
