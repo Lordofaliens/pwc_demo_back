@@ -15,8 +15,9 @@ export class PVAService {
 
         // Fetch data from the respective services
         const orders = await this.orderService.getOrders(customerIDs, productIDs);
+        console.log("ORDER LENGTH", orders.length);
         const products = await this.productService.getAllProducts();
-
+        console.log("PRODUCT LENGTH", products.length);
         let firstYearProjection: number = 0;
         let totalQuantity: number = 0;
         let totalPriceImpact: number = 0;
@@ -25,12 +26,12 @@ export class PVAService {
 
         // Parse data to calculate total weighted price and total quantity
         orders.forEach(order => {
-            const product = products.find(p => p.ID === order.ProductID);
+            const product = products.find(p => p.product_key === order.product_id);
             if (product) {
-                for (let i = 0; i < order.Quantity; i++) {
-                    firstYearProjection += product.Unit_Price;
+                for (let i = 0; i < order.quantity; i++) {
+                    firstYearProjection += Number(product.unit_price);
                 }
-                totalQuantity += order.Quantity;
+                totalQuantity += order.quantity;
             }
         });
 
@@ -38,15 +39,15 @@ export class PVAService {
 
         // Calculate PVA for each order
         const results = orders.map(order => {
-            const product = products.find(p => p.ID === order.ProductID);
+            const product = products.find(p => p.product_key === order.product_id);
             if (!product) return null;
 
-            const currentPrice = product.Unit_Price;
+            const currentPrice = product.unit_price;
             const previousPrice = currentPrice * this.getRandomMultiplier();
-            const quantity = order.Quantity;
+            const quantity = order.quantity;
             const previousQuantity = quantity * this.getRandomMultiplier();
             const currentQuantityPercent = quantity / totalQuantity;
-            const previousQuantityPercent = quantity * this.getRandomMultiplier();
+            const previousQuantityPercent = currentQuantityPercent * this.getRandomMultiplier();
 
             const priceImpact = (currentPrice - previousPrice) * quantity;
             const mixImpact = quantity * (previousPrice - weightedAveragePrice) * (currentQuantityPercent - previousQuantityPercent);
@@ -57,7 +58,7 @@ export class PVAService {
             totalMixImpact += mixImpact;
 
             return {
-                orderID: order.ID,
+                orderID: order.index,
                 quantity,
                 previousQuantity,
                 previousPrice,
@@ -68,7 +69,14 @@ export class PVAService {
             };
         }).filter(result => result !== null);
 
-        let secondYearProjection: number = firstYearProjection + totalPriceImpact + totalVolumeImpact + totalMixImpact;
+        let secondYearProjection: number = Number(firstYearProjection) + Number(totalPriceImpact) + Number(totalVolumeImpact) + Number(totalMixImpact);
+
+        console.log('Total Quantity:', totalQuantity);
+        console.log('First Year Projection:', firstYearProjection);
+        console.log('Total Price Impact:', totalPriceImpact);
+        console.log('Total Volume Impact:', totalVolumeImpact);
+        console.log('Total Mix Impact:', totalMixImpact);
+        console.log('Second Year Projection:', secondYearProjection);
 
         return { results, totalQuantity, firstYearProjection, totalPriceImpact, totalVolumeImpact, totalMixImpact, secondYearProjection };
     }

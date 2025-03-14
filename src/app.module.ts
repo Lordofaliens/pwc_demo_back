@@ -1,17 +1,41 @@
+// app.module.ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import {GatewayController} from "./gateway/gateway.controller";
-import {PVAController} from "./pva/pva.controller";
-import {CustomerModule} from "./database/customer/customer.module";
-import {OrderModule} from "./database/order/order.module";
-import {ProductModule} from "./database/product/product.module";
-import {PVAModule} from "./pva/pva.module";
-import {GatewayModule} from "./gateway/gateway.module";
+import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { GatewayModule } from './gateway/gateway.module';
+import { CustomerModule } from './database/customer/customer.module';
+import { OrderModule } from './database/order/order.module';
+import { ProductModule } from './database/product/product.module';
+import { PVAModule } from './pva/pva.module';
+import { PostgresModule } from './database/postgres/postgres.module';
+
+//log the password before the .forRoot() call
+// This works: console.log(process.env.DB_PASSWORD);
+
+// Add your environment variables or replace with your connection details.
 @Module({
-  imports: [CustomerModule, OrderModule, ProductModule, GatewayModule, PVAModule],
-  controllers: [AppController, GatewayController, PVAController],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'postgres',
+      password: 'Vlad_2907', // Ensure this is correct
+      database: 'postgres',
+      schema: 'public',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
+    GatewayModule,
+    CustomerModule,
+    OrderModule,
+    ProductModule,
+    PVAModule,
+    PostgresModule,
+  ],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
