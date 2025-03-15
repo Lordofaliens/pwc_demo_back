@@ -8,27 +8,27 @@ export class GatewayController {
     constructor(private readonly gatewayService: GatewayService) {}
 
     @Post('generate-schema')
-    async generateSchema(@Body() body: { filePath: string }) {
-        const { filePath } = body;
-        
-        if (!filePath) {
-            throw new Error('No file path provided');
+    @UseInterceptors(FileInterceptor('file'))
+    async generateSchema(@UploadedFile() file: Express.Multer.File) {
+        if (!file) {
+            throw new Error('No file provided');
         }
-        console.log(filePath);
+        console.log(file.originalname);
 
-        return await this.gatewayService.processFile(filePath);
+        return await this.gatewayService.processFile(file);
     }
 
     @Post('calculate-pva')
-    async calculatePva(@Body() body: { filePath: string }) {
-        const {filePath} = body;
-
-        if (!filePath) {
-            throw new Error('No file path provided');
+    @UseInterceptors(FileInterceptor('file'))
+    async calculatePva(@UploadedFile() file: Express.Multer.File) {
+        if (!file) {
+            throw new Error('No file uploaded');
         }
-        console.log(filePath);
 
-        const schema = (await this.gatewayService.processFile(filePath)).schema.schema;
+        console.log("Received file:", file.originalname);
+
+        // Process the file
+        const schema = (await this.gatewayService.processFile(file)).schema.schema;
         return await this.gatewayService.calculatePva(schema);
     }
 }
