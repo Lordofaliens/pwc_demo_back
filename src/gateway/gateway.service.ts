@@ -8,6 +8,8 @@ import { OrderService } from '../database/order/order.service';
 import {PVAService} from "../pva/pva.service";
 const fs = require('fs');
 
+import { Readable } from 'stream';
+
 @Injectable()
 export class GatewayService {
     private readonly logger = new Logger(GatewayService.name);
@@ -21,7 +23,7 @@ export class GatewayService {
         private readonly pvaService: PVAService,
     ) {}
 
-    async processFile(filePath: string) {
+    async processFile(file: Express.Multer.File) {
         const processedData = {
             customers: 0,
             products: 0,
@@ -30,20 +32,25 @@ export class GatewayService {
         };
 
         const rows: any[] = [];
-        
+
         try {
+            // Convert file.buffer into a readable stream
+            const readableStream = Readable.from(file.buffer);
+
             await new Promise<void>((resolve, reject) => {
-                fs.createReadStream(filePath)
+                readableStream
                     .pipe(csvParser())
                     .on('data', (row) => rows.push(row))
                     .on('end', resolve)
                     .on('error', reject);
             });
+
             const csvData = rows.slice(0, 10)
                 .map((row) => Object.values(row).join(','))
                 .join('\n');
+
             const schema = await this.schemaCreatorService.processData(rows, csvData);
-            
+
             // Create database schema
             await this.postgresService.createSchema();
 
@@ -80,20 +87,17 @@ export class GatewayService {
                         product_id: product.product_key,
                     });
                     processedData.orders++;
-                    // console.log(`Processed row ${index + 1} of ${rows.length}`);
-                    // console.log(`Processed data: ${JSON.stringify(processedData)}`);
 
                 } catch (error) {
                     processedData.errors++;
                     this.logger.error(`Error processing row ${index}: ${error.message}`);
                 }
-              
             }
 
-            return { 
+            return {
                 message: 'Data loading completed',
                 schema,
-                processedData 
+                processedData
             };
 
         } catch (error) {

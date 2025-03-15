@@ -89,9 +89,9 @@ export class PVAService {
         let gaussianRandom = Math.sqrt(-2.0 * Math.log(rand1)) * Math.cos(2.0 * Math.PI * rand2);
 
         // Scale it to fit in the range [0.85, 1.15]
-        let scaledRandom = 1 + gaussianRandom * 0.1; // Adjust std deviation to fit range
+        let scaledRandom = 1 + gaussianRandom * 0.2; // Adjust std deviation to fit range
 
         // Ensure it's within bounds
-        return Math.min(Math.max(scaledRandom, 0.85), 1.15);
+        return Math.min(Math.max(scaledRandom, 0.7), 1.3);
     }
 }
