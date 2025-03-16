@@ -5,6 +5,37 @@ import csvParser from 'csv-parser';
 const dotenv = require('dotenv');
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+
+
+async function schemaInConversation(prompt: string, csvData:string) {
+  console.log("schemaInConversation");
+  // Here we will be talking with gemini to create start schema using prompts
+  const promptExt = `
+        Given the following transactional data in CSV format, suggest a star schema with a fact table. The data is provided below:
+        
+        **Note that this is actually a conversation with the user**
+
+        ${csvData}
+        **Requirements:**
+        1. **Fact Table**: Create a fact table, based on the data provided.
+
+        2. **Dimension Tables**: Make maximum 4 dimensions tables
+
+        3. Latest prompts from the user:
+          ${prompt}
+
+        **Output Format**:
+          - Provide only a simple list with indents for the keys in each table, keep it simple and neat
+          - Do not include any other information, just the keys and tables
+          - Make sure to have the most uptodate information in the schema, this is a conversation with the user
+      `;
+
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const result = await model.generateContent(promptExt);
+  console.log(result.response.text());
+  return result.response.text();
+}
+
 async function generateStarSchemaWithGemini(csvData: string) {
     const prompt = `Given the following transactional data in CSV format, suggest a star schema with a fact table and two dimension tables. The data is provided below:
 
@@ -47,6 +78,8 @@ async function generateStarSchemaWithGemini(csvData: string) {
 @Injectable()
 export class SchemaCreatorService {
 
+
+
   async processData(rows: any, data: any) {
     if (!rows.length) {
       throw new BadRequestException('No data found in CSV');
@@ -60,5 +93,17 @@ export class SchemaCreatorService {
   }
 
 
-  
+  async geminiConservation(prompt: string, rows: any, data: any) {
+    if (!rows.length) {
+      throw new BadRequestException('No data found in CSV');
+    }    
+    if(!data) {
+      throw new Error('No data provided');
+    }
+    const schema = await schemaInConversation(prompt, data);
+
+    console.log("here");
+    return {schema}
+  }
+
 }

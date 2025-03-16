@@ -23,6 +23,34 @@ export class GatewayService {
         private readonly pvaService: PVAService,
     ) {}
 
+
+    async communitcateWithGemini(prompt : string, file: Express.Multer.File) {
+        const rows: any[] = [];
+        if (!file) {
+            throw new Error('No file provided');
+        }
+        try{
+            const readableStream = Readable.from(file.buffer);
+            await new Promise<void>((resolve, reject) => {
+                readableStream
+                    .pipe(csvParser())
+                    .on('data', (row) => rows.push(row))
+                    .on('end', resolve)
+                    .on('error', reject);
+            });
+            const csvData = rows.slice(0, 10)
+                .map((row) => Object.values(row).join(','))
+                .join('\n');
+
+            const schema = await this.schemaCreatorService.geminiConservation(prompt, rows, csvData);
+            return {success: true, schema};
+        }
+        catch (error) {
+            this.logger.error(`File processing failed: ${error.message}`);
+            throw error;
+        }
+
+    }
     async processFile(file: Express.Multer.File) {
         const processedData = {
             customers: 0,
